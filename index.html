@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PropDoc AI — Real Estate SOP Assistant</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+  :root {
+    --bg:#0b0f1a; --surface:#111827; --surface2:#1a2236; --border:#1e2d45;
+    --accent:#00c2ff; --accent2:#3b82f6; --gold:#f59e0b;
+    --green:#10b981; --red:#ef4444; --orange:#f97316;
+    --text:#e2e8f0; --muted:#64748b; --user-bubble:#1e3a5f; --bot-bubble:#151f30;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .logo{display:flex;align-items:center;gap:10px}
+  .logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+  .logo-text{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;letter-spacing:-0.5px}
+  .logo-text span{color:var(--accent)}
+  .header-tags{display:flex;gap:8px}
+  .tag{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 8px;border-radius:4px;border:1px solid var(--border);color:var(--muted)}
+  .tag.active{border-color:var(--accent);color:var(--accent)}
+  .status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px;box-shadow:0 0 6px var(--green);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+  .main{display:flex;flex:1;overflow:hidden}
+  .sidebar{width:260px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+  .sidebar-section{padding:16px;border-bottom:1px solid var(--border)}
+  .sidebar-title{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:12px}
+  .quick-btn{width:100%;text-align:left;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12.5px;cursor:pointer;margin-bottom:6px;transition:all 0.15s;line-height:1.4}
+  .quick-btn:hover{border-color:var(--accent);background:rgba(0,194,255,0.06);color:var(--accent)}
+  .quick-btn .icon{display:inline-block;margin-right:6px;font-size:13px}
+  .kb-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .stat-chip{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px;text-align:center}
+  .stat-num{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;color:var(--accent)}
+  .stat-label{font-size:10px;color:var(--muted);margin-top:2px}
+  .upload-zone{border:1.5px dashed var(--border);border-radius:10px;padding:16px 12px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative}
+  .upload-zone:hover,.upload-zone.drag-over{border-color:var(--accent);background:rgba(0,194,255,0.05)}
+  .upload-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+  .upload-icon{font-size:24px;margin-bottom:6px}
+  .upload-text{font-size:12px;color:var(--muted);line-height:1.5}
+  .upload-text strong{color:var(--text);display:block;font-size:13px;margin-bottom:2px}
+  .upload-formats{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);margin-top:6px}
+  .attached-file{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:8px;display:flex;align-items:center;gap:10px;font-size:12.5px}
+  .attached-file .file-icon{font-size:20px;flex-shrink:0}
+  .attached-file .file-info{flex:1;min-width:0}
+  .attached-file .file-name{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .attached-file .file-size{font-size:11px;color:var(--muted);margin-top:2px}
+  .attached-file .file-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px;transition:color 0.15s;flex-shrink:0}
+  .attached-file .file-remove:hover{color:var(--red)}
+  .analyze-btn{width:100%;margin-top:8px;background:linear-gradient(135deg,rgba(0,194,255,0.15),rgba(59,130,246,0.15));border:1px solid var(--accent);border-radius:8px;padding:10px;color:var(--accent);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px}
+  .analyze-btn:hover{background:rgba(0,194,255,0.2)}
+  .analyze-btn:disabled{opacity:0.4;cursor:not-allowed}
+  .chat-area{flex:1;display:flex;flex-direction:column;overflow:hidden}
+  .messages{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px;scroll-behavior:smooth}
+  .messages::-webkit-scrollbar{width:4px}
+  .messages::-webkit-scrollbar-track{background:transparent}
+  .messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+  .msg{display:flex;gap:12px;max-width:840px;animation:fadeUp 0.3s ease}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .msg.user{align-self:flex-end;flex-direction:row-reverse}
+  .avatar{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px}
+  .avatar.bot{background:linear-gradient(135deg,var(--accent2),var(--accent))}
+  .avatar.user{background:var(--surface2);border:1px solid var(--border)}
+  .bubble{padding:12px 16px;border-radius:12px;font-size:14px;line-height:1.65;max-width:700px}
+  .bubble.bot{background:var(--bot-bubble);border:1px solid var(--border);border-top-left-radius:4px}
+  .bubble.user{background:var(--user-bubble);border:1px solid rgba(59,130,246,0.3);border-top-right-radius:4px}
+  .bubble h4{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--accent);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px}
+  .bubble p{margin-bottom:8px}
+  .bubble p:last-child{margin-bottom:0}
+  .bubble .code-tag{font-family:'JetBrains Mono',monospace;background:rgba(0,194,255,0.1);color:var(--accent);border:1px solid rgba(0,194,255,0.2);padding:1px 6px;border-radius:4px;font-size:12px}
+  .bubble .invalid-badge{display:inline-block;background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3);border-radius:4px;padding:2px 8px;font-size:11px;font-family:'JetBrains Mono',monospace;margin:0 2px}
+  .bubble .valid-badge{display:inline-block;background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.3);border-radius:4px;padding:2px 8px;font-size:11px;font-family:'JetBrains Mono',monospace;margin:0 2px}
+  .bubble ul{list-style:none;padding:0;margin:6px 0}
+  .bubble ul li{padding:3px 0 3px 16px;position:relative;font-size:13.5px}
+  .bubble ul li::before{content:'›';position:absolute;left:0;color:var(--accent);font-weight:bold}
+  .typing{display:flex;align-items:center;gap:4px;padding:8px 0}
+  .typing span{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:bounce 1.2s infinite}
+  .typing span:nth-child(2){animation-delay:0.2s}
+  .typing span:nth-child(3){animation-delay:0.4s}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:0.4}30%{transform:translateY(-6px);opacity:1}}
+  .input-bar{padding:12px 24px 14px;background:var(--surface);border-top:1px solid var(--border)}
+  .inline-attach-bar{display:none;align-items:center;gap:8px;background:rgba(0,194,255,0.06);border:1px solid rgba(0,194,255,0.25);border-radius:8px 8px 0 0;padding:7px 12px;font-size:12.5px;border-bottom:none}
+  .inline-attach-bar.show{display:flex}
+  .iab-icon{font-size:16px}
+  .iab-name{flex:1;color:var(--accent);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .iab-size{color:var(--muted);font-size:11px;flex-shrink:0}
+  .iab-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:2px;line-height:1}
+  .iab-remove:hover{color:var(--red)}
+  .input-row{display:flex;gap:10px;align-items:flex-end}
+  .input-wrap{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;padding:0 8px 0 14px;gap:6px;transition:border-color 0.2s}
+  .input-wrap.attached{border-radius:0 0 12px 12px;border-top-color:transparent}
+  .input-wrap:focus-within{border-color:var(--accent)}
+  textarea{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;resize:none;padding:13px 0;max-height:120px;line-height:1.5}
+  textarea::placeholder{color:var(--muted)}
+  .attach-inline-btn{position:relative;width:34px;height:34px;border-radius:8px;background:var(--surface);border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0}
+  .attach-inline-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,194,255,0.06)}
+  .attach-inline-btn.has{border-color:var(--accent);color:var(--accent);background:rgba(0,194,255,0.1)}
+  .attach-inline-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
+  .send-btn{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;transition:opacity 0.2s,transform 0.1s}
+  .send-btn:hover{opacity:0.85}
+  .send-btn:active{transform:scale(0.95)}
+  .send-btn:disabled{opacity:0.4;cursor:not-allowed}
+  .input-hint{font-size:11px;color:var(--muted);margin-top:6px;display:flex;gap:16px}
+  .welcome{text-align:center;max-width:600px;margin:auto;padding:40px 20px}
+  .welcome .w-icon{font-size:48px;margin-bottom:16px}
+  .welcome h2{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:8px}
+  .welcome p{color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:20px}
+  .welcome-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  .chip{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:7px 14px;font-size:12.5px;cursor:pointer;transition:all 0.15s;color:var(--text)}
+  .chip:hover{border-color:var(--accent);color:var(--accent);background:rgba(0,194,255,0.05)}
+  .upload-callout{margin-top:20px;background:rgba(0,194,255,0.06);border:1px solid rgba(0,194,255,0.2);border-radius:10px;padding:14px 18px;font-size:13px;color:var(--text);display:flex;align-items:flex-start;gap:12px;text-align:left}
+  .upload-callout .uc-icon{font-size:24px;flex-shrink:0}
+  .upload-callout strong{color:var(--accent);display:block;margin-bottom:4px;font-size:14px}
+  .error-msg{color:var(--red);font-size:13px;padding:8px 12px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:8px;margin-top:6px}
+  .progress-msg{color:var(--accent);font-size:12px;font-family:'JetBrains Mono',monospace;margin-top:4px;text-align:center}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🏠</div>
+    <div class="logo-text">Prop<span>Doc</span> AI</div>
+  </div>
+  <div class="header-tags">
+    <span class="tag active"><span class="status-dot"></span>Live</span>
+    <span class="tag">US Real Estate SOP</span>
+    <span class="tag">PDF · Image · Text</span>
+  </div>
+</header>
+
+<div class="main">
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-title">Knowledge Base</div>
+      <div class="kb-stats">
+        <div class="stat-chip"><div class="stat-num">332</div><div class="stat-label">Fields</div></div>
+        <div class="stat-chip"><div class="stat-num">165</div><div class="stat-num stat-label">Doc Types</div></div>
+        <div class="stat-chip"><div class="stat-num">48</div><div class="stat-label">Counties</div></div>
+        <div class="stat-chip"><div class="stat-num">48</div><div class="stat-label">Invalid Rules</div></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">📎 Upload &amp; Check Document</div>
+      <div class="upload-zone" id="uploadZone"
+           ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+        <input type="file" id="fileInputSidebar" accept=".pdf,.png,.jpg,.jpeg,.webp,.gif"
+               onchange="onFileSelect(event)">
+        <div class="upload-icon">📂</div>
+        <div class="upload-text">
+          <strong>Drop file or click to browse</strong>
+          Upload a deed, mortgage, or any property document to check validity
+        </div>
+        <div class="upload-formats">PDF · PNG · JPG · WEBP</div>
+      </div>
+      <div id="sidebarPreview" style="display:none">
+        <div class="attached-file">
+          <div class="file-icon" id="sbIcon">📄</div>
+          <div class="file-info">
+            <div class="file-name" id="sbName">—</div>
+            <div class="file-size" id="sbSize">—</div>
+          </div>
+          <button class="file-remove" onclick="clearFile()">✕</button>
+        </div>
+        <button class="analyze-btn" id="analyzeBtn" onclick="quickAnalyze()">
+          🔍 Analyze Document
+        </button>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">Quick Questions</div>
+      <button class="quick-btn" onclick="sq('What is the FIPS code and how do I use it?')"><span class="icon">🔢</span>What is FIPS code?</button>
+      <button class="quick-btn" onclick="sq('What are the document types for Deed transfers and their codes?')"><span class="icon">📄</span>Deed document types</button>
+      <button class="quick-btn" onclick="sq('When is a document marked INVALID due to Easement?')"><span class="icon">🚫</span>Easement invalid rule</button>
+      <button class="quick-btn" onclick="sq('What are the keying instructions for Calcasieu LA?')"><span class="icon">📍</span>Calcasieu LA KI</button>
+      <button class="quick-btn" onclick="sq('What is the Recording Date format and where to find it?')"><span class="icon">📅</span>Recording Date field</button>
+      <button class="quick-btn" onclick="sq('What are the valid vesting codes I can use?')"><span class="icon">📋</span>Vesting codes</button>
+      <button class="quick-btn" onclick="sq('How do I identify seller and buyer names in a Louisiana document?')"><span class="icon">👤</span>Seller/Buyer (LA)</button>
+      <button class="quick-btn" onclick="sq('What are the loan types and their codes?')"><span class="icon">💰</span>Loan type codes</button>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">Counties Loaded</div>
+      <div style="font-size:11.5px;color:var(--muted);line-height:1.9">
+        LA · IN · IL · MI · MO · KY · KS · MN · AL · NY
+        <br><span style="color:var(--accent);font-size:10px;font-family:'JetBrains Mono',monospace">48 county KIs loaded</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-area">
+    <div class="messages" id="messages">
+      <div class="welcome" id="welcome">
+        <div class="w-icon">🏢</div>
+        <h2>PropDoc AI Assistant</h2>
+        <p>SOP-powered assistant for US real estate document collection. Ask any question, or upload a PDF/screenshot to instantly check if a document is valid and extract its key fields.</p>
+        <div class="welcome-chips">
+          <span class="chip" onclick="sq('What documents are invalid for Zillow?')">Invalid document headers</span>
+          <span class="chip" onclick="sq('Explain Data Class codes D, M, and F')">Data Class codes</span>
+          <span class="chip" onclick="sq('How do I key the APN for Assumption LA?')">APN — Assumption LA</span>
+          <span class="chip" onclick="sq('Difference between Recording Date and Document Date?')">Recording vs Doc Date</span>
+          <span class="chip" onclick="sq('What are the rules for keying Sales Price?')">Sales Price rules</span>
+        </div>
+        <div class="upload-callout">
+          <div class="uc-icon">📎</div>
+          <div>
+            <strong>Upload any document for instant validity check</strong>
+            Attach a PDF or screenshot of a deed, mortgage, or assignment — then ask "Is this valid?" to get a full SOP-based verdict with extracted fields and document type code.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="inline-attach-bar" id="inlineBar">
+      <span class="iab-icon" id="iabIcon">📄</span>
+      <span class="iab-name" id="iabName">—</span>
+      <span class="iab-size" id="iabSize"></span>
+      <button class="iab-remove" onclick="clearFile()">✕</button>
+    </div>
+
+    <div class="input-bar">
+      <div class="input-row">
+        <div class="input-wrap" id="inputWrap">
+          <textarea id="userInput"
+            placeholder="Ask about fields, document types, county KIs, validity rules… or attach a file above"
+            rows="1" onkeydown="onKey(event)" oninput="resize(this)"></textarea>
+          <div class="attach-inline-btn" id="attachBtn" title="Attach PDF or image">
+            📎
+            <input type="file" id="fileInputInline" accept=".pdf,.png,.jpg,.jpeg,.webp,.gif"
+                   onchange="onFileSelect(event)">
+          </div>
+        </div>
+        <button class="send-btn" id="sendBtn" onclick="send()">➤</button>
+      </div>
+      <div class="input-hint">
+        <span>↵ Send</span>
+        <span>Shift+↵ New line</span>
+        <span>📎 Attach PDF or image to check validity</span>
+      </div>
+      <div class="progress-msg" id="progressMsg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ Load PDF.js only (Tesseract removed — we send images directly to vision AI) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+</script>
+
+<script>
+/* ── State ── */
+let file = null;
+let fileB64 = null;     // base64 string WITHOUT data: prefix
+let fileMime = null;
+let loading = false;
+let history = [];       // ✅ FIX: conversation history for context
+
+/* ── Paste image support ── */
+window.addEventListener('paste', e => {
+  const items = e.clipboardData.items;
+  for (let item of items) {
+    if (item.type.indexOf('image') !== -1) {
+      e.preventDefault();
+      loadFile(item.getAsFile());
+      setProgress('📋 Image pasted — click ➤ to analyze');
+      break;
+    }
+  }
+});
+
+/* ── Drag & drop ── */
+function onDragOver(e){ e.preventDefault(); document.getElementById('uploadZone').classList.add('drag-over'); }
+function onDragLeave(){ document.getElementById('uploadZone').classList.remove('drag-over'); }
+function onDrop(e){
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f) loadFile(f);
+}
+function onFileSelect(e){
+  const f = e.target.files[0];
+  if (f) loadFile(f);
+  e.target.value = ''; // reset so same file can be re-selected
+}
+
+/* ── Load file → base64 ── */
+function loadFile(f){
+  const allowed = ['application/pdf','image/png','image/jpeg','image/webp','image/gif'];
+  if (!allowed.includes(f.type)){
+    alert('Please upload a PDF, PNG, JPG, WEBP, or GIF.');
+    return;
+  }
+  file = f;
+  fileMime = f.type;
+
+  const reader = new FileReader();
+  reader.onload = ev => {
+    // ✅ Store ONLY the base64 part (after the comma)
+    fileB64 = ev.target.result.split(',')[1];
+    refreshAttachUI();
+  };
+  reader.readAsDataURL(f);
+}
+
+function refreshAttachUI(){
+  if (!file) return;
+  const icon = fileMime === 'application/pdf' ? '📄' : '🖼️';
+  const sizeKB = (file.size / 1024).toFixed(1);
+
+  // Sidebar
+  document.getElementById('sbIcon').textContent = icon;
+  document.getElementById('sbName').textContent = file.name;
+  document.getElementById('sbSize').textContent = sizeKB + ' KB';
+  document.getElementById('sidebarPreview').style.display = 'block';
+
+  // Input bar
+  document.getElementById('iabIcon').textContent = icon;
+  document.getElementById('iabName').textContent = file.name;
+  document.getElementById('iabSize').textContent = sizeKB + ' KB';
+  document.getElementById('inlineBar').classList.add('show');
+  document.getElementById('inputWrap').classList.add('attached');
+  document.getElementById('attachBtn').classList.add('has');
+}
+
+function clearFile(){
+  file = null; fileB64 = null; fileMime = null;
+  document.getElementById('sidebarPreview').style.display = 'none';
+  document.getElementById('inlineBar').classList.remove('show');
+  document.getElementById('inputWrap').classList.remove('attached');
+  document.getElementById('attachBtn').classList.remove('has');
+  setProgress('');
+}
+
+function setProgress(msg){
+  document.getElementById('progressMsg').textContent = msg;
+}
+
+/* ── Input helpers ── */
+function resize(el){ el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 120) + 'px'; }
+function onKey(e){ if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); send(); } }
+function sq(t){ document.getElementById('userInput').value = t; send(); }
+
+/* ── DOM helpers ── */
+const msgsEl = document.getElementById('messages');
+
+function killWelcome(){
+  const w = document.getElementById('welcome');
+  if (w) w.remove();
+}
+
+function addMsg(role, html){
+  killWelcome();
+  const wrap = document.createElement('div'); wrap.className = `msg ${role}`;
+  const av = document.createElement('div'); av.className = `avatar ${role}`;
+  av.textContent = role === 'bot' ? '🤖' : '👤';
+  const bub = document.createElement('div'); bub.className = `bubble ${role}`;
+  bub.innerHTML = html;
+  wrap.appendChild(av);
+  wrap.appendChild(bub);
+  msgsEl.appendChild(wrap);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+  return bub; // return for potential updates
+}
+
+function showTyping(){
+  const d = document.createElement('div'); d.className = 'msg bot'; d.id = 'typing';
+  d.innerHTML = '<div class="avatar bot">🤖</div><div class="bubble bot"><div class="typing"><span></span><span></span><span></span></div></div>';
+  msgsEl.appendChild(d);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+function hideTyping(){ const t = document.getElementById('typing'); if (t) t.remove(); }
+
+/* ── PDF text extraction ── */
+async function extractFromPDF(fileObj){
+  try {
+    setProgress('📖 Reading PDF pages...');
+    const buffer = await fileObj.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
+    let text = '';
+    for (let i = 1; i <= pdf.numPages; i++){
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const pageText = content.items.map(item => item.str).join(' ');
+      text += `\n--- Page ${i} ---\n` + pageText;
+      setProgress(`📖 Reading page ${i} of ${pdf.numPages}...`);
+    }
+    console.log('PDF extracted text length:', text.length);
+    return text.trim();
+  } catch (err){
+    console.error('PDF extract error:', err);
+    return '';
+  }
+}
+
+/* ── Main send function ── */
+async function send(){
+  const txt = document.getElementById('userInput').value.trim();
+
+  // Must have text OR a file
+  if (!txt && !file){ return; }
+  if (loading){ return; }
+
+  loading = true;
+  document.getElementById('sendBtn').disabled = true;
+  document.getElementById('userInput').disabled = true;
+
+  // Snapshot current file state before clearing
+  const currentFile    = file;
+  const currentFileB64 = fileB64;
+  const currentFileMime = fileMime;
+  const currentTxt     = txt;
+
+  // Show user message
+  let userDisplay = '';
+  if (currentFile){
+    const icon = currentFileMime === 'application/pdf' ? '📄' : '🖼️';
+    userDisplay += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;background:rgba(0,194,255,0.08);border:1px solid rgba(0,194,255,0.2);border-radius:8px;padding:8px 12px;">
+      <span style="font-size:18px">${icon}</span>
+      <div><div style="font-weight:500;color:var(--accent);font-size:13px">${currentFile.name}</div>
+      <div style="font-size:11px;color:var(--muted)">${(currentFile.size/1024).toFixed(1)} KB</div></div></div>`;
+  }
+  if (currentTxt){
+    userDisplay += `<p>${currentTxt}</p>`;
+  }
+  addMsg('user', userDisplay || '<p>📎 Analyze this document</p>');
+
+  showTyping();
+
+  // Clear UI immediately
+  document.getElementById('userInput').value = '';
+  clearFile();
+
+  try {
+    let messageToSend = currentTxt || '';
+    let imageB64ToSend = null;
+    let mimeToSend = null;
+
+    if (currentFile){
+      if (currentFileMime === 'application/pdf'){
+        // ✅ FIX: Extract PDF text then send as text message
+        const pdfText = await extractFromPDF(currentFile);
+
+        if (!pdfText || pdfText.length < 30){
+          hideTyping();
+          addMsg('bot', '<div class="error-msg">⚠️ Could not extract text from this PDF. It may be a scanned image PDF. Try uploading a screenshot/image of the document instead.</div>');
+          loading = false;
+          document.getElementById('sendBtn').disabled = false;
+          document.getElementById('userInput').disabled = false;
+          setProgress('');
+          return;
+        }
+
+        // Combine user question + extracted PDF text
+        messageToSend = `${currentTxt ? currentTxt + '\n\n' : 'Please analyze this real estate document:\n\n'}` +
+          `[DOCUMENT TEXT EXTRACTED FROM PDF: ${currentFile.name}]\n${pdfText}`;
+
+        setProgress('✅ PDF read — sending to AI...');
+
+      } else {
+        // ✅ FIX: For images — send base64 directly to vision AI (no Tesseract needed)
+        imageB64ToSend = currentFileB64;
+        mimeToSend = currentFileMime;
+        messageToSend = currentTxt || 'Please analyze this real estate document. Perform a full SOP-based validity check and extract all key fields.';
+        setProgress('🖼️ Sending image to AI...');
+      }
+    }
+
+    // ✅ FIX: Correct request body — send 'message' (not 'prompt')
+    const requestBody = {
+      message: messageToSend,
+      system: sysPrompt,
+      history: history.slice(-10),   // last 10 turns for context
+      imageBase64: imageB64ToSend,   // null if no image
+      fileMime: mimeToSend           // null if no image
+    };
+
+    const res = await fetch('http://localhost:3000', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+
+    setProgress('');
+
+    if (!res.ok){
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.error || `Server error ${res.status}`);
+    }
+
+    const data = await res.json();
+    hideTyping();
+
+    if (data.error){
+      addMsg('bot', `<div class="error-msg">⚠️ ${data.error}</div>`);
+    } else {
+      const replyHtml = fmt(data.reply);
+      addMsg('bot', replyHtml);
+
+      // ✅ FIX: Save to history for multi-turn context
+      history.push({ role: 'user', content: messageToSend.substring(0, 2000) }); // trim huge PDF texts
+      history.push({ role: 'assistant', content: data.reply });
+
+      // Keep history manageable
+      if (history.length > 20) history = history.slice(-20);
+    }
+
+  } catch (err){
+    hideTyping();
+    console.error('Send error:', err);
+    addMsg('bot', `<div class="error-msg">⚠️ ${err.message || 'Connection failed. Check server logs.'}</div>`);
+    setProgress('');
+  } finally {
+    loading = false;
+    document.getElementById('sendBtn').disabled = false;
+    document.getElementById('userInput').disabled = false;
+    document.getElementById('userInput').focus();
+  }
+}
+
+/* ── Quick analyze from sidebar ── */
+function quickAnalyze(){
+  const txt = document.getElementById('userInput').value.trim();
+  if (!file){ return; }
+  if (!txt){
+    document.getElementById('userInput').value = 'Analyze this document. Check validity and extract all key fields.';
+  }
+  send();
+}
+
+/* ── Format response ── */
+function fmt(text){
+  let h = text;
+  // Headers
+  h = h.replace(/^#{1,3} (.+)$/gm, '<h4>$1</h4>');
+  // Bold
+  h = h.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+  // Code
+  h = h.replace(/`([^`\n]+)`/g, '<span class="code-tag">$1</span>');
+  // INVALID / VALID badges
+  h = h.replace(/\bINVALID\b(?![^<]*>)/g, '<span class="invalid-badge">INVALID</span>');
+  h = h.replace(/\bVALID\b(?![^<]*>)/g, '<span class="valid-badge">VALID</span>');
+  // Bullets
+  const lines = h.split('\n');
+  let inUl = false, out = [];
+  for (let l of lines){
+    const tr = l.trim();
+    const isBullet = /^[-•*]\s+/.test(tr);
+    if (isBullet && !inUl){ out.push('<ul>'); inUl = true; }
+    if (!isBullet && inUl){ out.push('</ul>'); inUl = false; }
+    if (isBullet) out.push('<li>' + tr.replace(/^[-•*]\s+/, '') + '</li>');
+    else if (tr) out.push('<p>' + l + '</p>');
+  }
+  if (inUl) out.push('</ul>');
+  return out.join('');
+}
+
+/* ── System prompt ── */
+const sysPrompt = `
+You are a Real Estate Data Entry Specialist Assistant. 
+Your ONLY source of truth for county-specific rules is the provided "counties_KIs.json" file.
+
+STRICT INSTRUCTIONS:
+1. When a user asks about a county (e.g., "LA Assumption"), search the JSON for that county name.
+2. Look into the "special_instructions" array for the specific "field" they are asking about (e.g., Sale Price).
+3. If the user asks for a field rule, provide the exact wording from the "details" section.
+4. Always check "additional_info" for state-specific rules (like Louisiana's "Square = Block" rule).
+
+EXAMPLE RESPONSE STYLE:
+"For [County Name], the [Field] rule is: [Details from JSON]. 
+Note: [Relevant Additional Info]"
+`;
+</script>
+</body>
+</html>
