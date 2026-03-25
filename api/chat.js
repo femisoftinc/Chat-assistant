@@ -5,16 +5,24 @@ const fetch = globalThis.fetch || require('node-fetch');
 
 
 module.exports = async function handler(req, res) {
+
+console.log("=== API HIT ===");
+console.log("Method:", req.method);
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   // ✅ FIX 1: Read 'message' (not 'prompt') to match what frontend sends
   const { message, system, imageBase64, fileMime, history = [] } = req.body;
+  console.log("Incoming message:", message);
+  console.log("Has image:", !!imageBase64);
+  console.log("History length:", history.length);
 
   const apiKey = process.env.OPENROUTER_API_KEY;
+  console.log("API Key exists:", apiKey ? "YES" : "NO");
   if (!apiKey) {
-    return res.status(500).json({ error: "Missing OPENROUTER_API_KEY" });
+    return res.status(500).json({ error: "Missing OPENROUTER_API_KEY" });``
   }
 
   if (!message && !imageBase64) {
@@ -65,6 +73,10 @@ module.exports = async function handler(req, res) {
 
     console.log("Using model:", model);
     console.log("Message length:", typeof userContent === "string" ? userContent.length : "multimodal");
+    
+    console.log("Sending request to OpenRouter...");
+    console.log("Model:", model);
+    console.log("Messages preview:", JSON.stringify(messages).slice(0, 300));
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -85,6 +97,8 @@ module.exports = async function handler(req, res) {
     const data = await response.json();
 
     console.log("OpenRouter status:", response.status);
+    console.log("OpenRouter status:", response.status);
+    console.log("OpenRouter full response:", JSON.stringify(data));
 
     if (!response.ok) {
       console.error("OpenRouter error:", data);
@@ -103,7 +117,7 @@ module.exports = async function handler(req, res) {
     res.status(200).json({ reply: resultText });
 
   } catch (err) {
-    console.error("Handler error:", err);
-    res.status(500).json({ error: "AI connection failed: " + err.message });
+  console.error("❌ FULL ERROR:", err);
+  res.status(500).json({ error: "AI connection failed: " + err.message });
   }
 };

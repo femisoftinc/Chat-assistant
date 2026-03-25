@@ -480,7 +480,7 @@ async function send(){
       fileMime: mimeToSend           // null if no image
     };
 
-    const res = await fetch("/api/chat", {
+    const res = await fetch("/api/chat", {              //('http://localhost:3000', {      used for locally
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(requestBody)
