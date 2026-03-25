@@ -1737,12 +1737,16 @@
             },
             {
                 "field": "Assessor Parcel Number",
-                "details": [
-                    "Exhibit A:  Legal Description area\n(other locations throughout body of document)",
+                 "details": [
+                    "Exhibit A: Legal Description area\n(Other locations throughout the body of the document)",
+
                     "APN\nParcel ID\nParcel ID Number\nTax ID\nPIN Number",
-                    "Predominate\n999-99-9-99-99-999.99\n\nLess Common\n999-99-9-99-99-999.99-9",
-                    "If \"061-134-17-0-10-09-004.00\"; key as \"134-17-0-10-09-004.00\" (seeMTGE)\nIf \"132-10-0-30-02-034.01-0-01\", \nkey as 132-10-0-30-02-034.01\" (see APN 1_v1.1)\nIf \"1051500000002010\"; key as \"105-15-0-00-00-002.01\" (see APN 2_v1.1)\nIf \"1330700000010000\", key as \"133-07-0-00-00-010.00\"\nIf \"171-11-0-10-22-005.000\", key as \"171-11-0-10-22-005.00\"",
-                    "The APN is a 15-16 digit, 7-8 segment identifier separated by dashes and decimal. Key according to format whenever possible. Otherwise key as presented\n\nFormat Notes:\n*  If 6th & 7th segment are separated by a dash, then replace the dash with period and key according to format.\n\n*  If encountered as a single string number containing exactly 15 or 16 digits, insert dashes and a period to conform to the standard format. For all other digit lengths, key the APN as shown in the document.. \n\n* If APN reports more than 8 segments, then drop last  segments to conform to format. \n\n* If the 8th segment is reported as a \"0\", remove segment to format. \n\nNOTE:  Occasionally an APN will report an additional 1st segment (061) in the beginning.   This is the MIAMI County identifier number and should not be keyed as part of the APN."
+
+                    "Predominant\n999-99-9-99-99-999.99\n\nLess Common\n999-99-9-99-99-999.99-9",
+
+                    "If \"061-134-17-0-10-09-004.00\"; key as \"134-17-0-10-09-004.00\" (remove leading county identifier)\nIf \"132-10-0-30-02-034.01-0-01\"; key as \"132-10-0-30-02-034.01\" (drop extra segments)\nIf \"1051500000002010\"; key as \"105-15-0-00-00-002.01\" (formatted from 16-digit string)\nIf \"1330700000010000\"; key as \"133-07-0-00-00-010.00\" (formatted from 16-digit string)\nIf \"171-11-0-10-22-005.000\"; key as \"171-11-0-10-22-005.00\" (trim extra decimal digits)",
+
+                    "The APN is a 15–16 digit, 7–8 segment identifier separated by dashes and a decimal. Key according to format whenever possible. Otherwise, key as presented.\n\nFormat Notes:\n* If encountered as a single string number containing exactly 15 or 16 digits, insert dashes (-) and a period (.) to conform to the standard format. For all other digit lengths, key the APN as shown in the document.\n\n* If the APN is already formatted, key as presented without changes.\n\n* If the 6th and 7th segments are separated by a dash (-), replace the dash with a period (.).\n\n* If the APN reports more than 8 segments, drop the last segment(s) to conform to format.\n\n* If the 8th segment is reported as \"0\", remove the segment.\n\nNOTE: Occasionally, an APN may include an additional first segment \"061\" at the beginning. This is the Miami County identifier and should not be keyed as part of the APN."
                 ]
             },
             {
