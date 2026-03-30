@@ -107,7 +107,15 @@
             },
             "5_HB_Code": {
                 "code": "HB",
-                "rule": "If a sales price amount is available in the image along with phrases like 'High Bid', 'Bid', or 'Bid Amount', key the amount with code 'HB'"
+                "rule": "If a sales price amount is available in the image along with phrases like 'High Bid', 'Bid', or 'Bid Amount','Highest Bid','Best Bid', key the amount with code 'HB'",
+                "priority": "Overrides all standard sales price rules including RD",
+                "notes": [
+                   "Do not use RD if bid-related wording is present",
+                   "LA counties sheriff deed usually contain bid amount",
+                   "Al counties foreclosure usually contain bid amount"
+                ]
+            
+            
             },
             "6_CS_Code": {
                 "code": "CS",
