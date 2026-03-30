@@ -18,10 +18,10 @@ console.log("Method:", req.method);
   console.log("Has image:", !!imageBase64);
   console.log("History length:", history.length);
 
-  const apiKey = process.env.OPENROUTER_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
   console.log("API Key exists:", apiKey ? "YES" : "NO");
   if (!apiKey) {
-    return res.status(500).json({ error: "Missing OPENROUTER_API_KEY" });
+    return res.status(500).json({ error: "Missing GROQ_API_KEY" });
   }
 
   if (!message && !imageBase64) {
@@ -59,31 +59,26 @@ console.log("Method:", req.method);
       },
       ...history,
       { 
-        type: "text",
         role: "user", 
         content: imageBase64 ? userContent : message 
       }
     ];
 
-    // ✅ FIX 4: Use a model that supports vision if image is attached
-    const model = imageBase64
-      ? "google/gemini-2.0-flash-001"   // Vision-capable model for images
-      : "stepfun/step-3.5-flash";        // Fast text model for text queries
+    // ✅ FIX 4: Use llama3-8b-8192 model via Groq
+    const model = "llama3-8b-8192";
 
     console.log("Using model:", model);
     console.log("Message length:", typeof userContent === "string" ? userContent.length : "multimodal");
     
-    console.log("Sending request to OpenRouter...");
+    console.log("Sending request to Groq...");
     console.log("Model:", model);
     console.log("Messages preview:", JSON.stringify(messages).slice(0, 300));
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://propdoc.ai",   // Optional: helps with OpenRouter routing
-        "X-Title": "PropDoc AI"
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
         model,
@@ -95,14 +90,13 @@ console.log("Method:", req.method);
 
     const data = await response.json();
 
-    console.log("OpenRouter status:", response.status);
-    console.log("OpenRouter status:", response.status);
-    console.log("OpenRouter full response:", JSON.stringify(data));
+    console.log("Groq status:", response.status);
+    console.log("Groq full response:", JSON.stringify(data));
 
     if (!response.ok) {
-      console.error("OpenRouter error:", data);
+      console.error("Groq error:", data);
       return res.status(500).json({
-        error: data.error?.message || `OpenRouter error: ${response.status}`
+        error: data.error?.message || `Groq error: ${response.status}`
       });
     }
 
