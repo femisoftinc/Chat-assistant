@@ -1,4 +1,3 @@
-require('dotenv').config();
 const countiesData = require('../counties_KIs.json');
 // ✅ node-fetch fallback for Node < 18
 const fetch = globalThis.fetch || require('node-fetch');
@@ -22,7 +21,7 @@ console.log("Method:", req.method);
   const apiKey = process.env.OPENROUTER_API_KEY;
   console.log("API Key exists:", apiKey ? "YES" : "NO");
   if (!apiKey) {
-    return res.status(500).json({ error: "Missing OPENROUTER_API_KEY" });``
+    return res.status(500).json({ error: "Missing OPENROUTER_API_KEY" });
   }
 
   if (!message && !imageBase64) {
