@@ -56,6 +56,139 @@
             "7_Multiple_APN_Same_County": {
                 "rule": "If multiple APNs are present within the same county, key all APNs as addendum"
             }
+        },
+        "SalesPrice_Keying_Guidelines": {
+            "1_No_Sales_Price_Available": {
+                "rule": "If no sales price is available in the image, do not key any code"
+            },
+            "2_Sales_Price_Present": {
+                "rule": "If a sales price amount is present in the image, key the amount in the Sales Price field with code 'RD'"
+            },
+            "3_Conditions_For_Keying": {
+                "3a_Minimum_Amount": "Sales price must be greater than 100",
+                "3b_Accepted_Phrases": [
+                    "Consideration",
+                    "Sum of",
+                    "Amount of",
+                    "Purchase Price",
+                    "Sales Price",
+                    "Consideration Amount",
+                    "Consideration Purchase Price",
+                    "Actual Consideration"
+                ],
+                "3c_Decimal_Handling": "Key whole dollars only — ignore digits after the decimal point (e.g., 250000.15 → key as 250000)",
+                "3d_Excluded_Phrases": [
+                    "Fair Value",
+                    "Market Value",
+                    "Value",
+                    "Exception Amount",
+                    "Exempt Amount",
+                    "Property Value",
+                    "True Value"
+                ]
+            },
+            "4_GT_Code": {
+                "code": "GT",
+                "trigger_phrases": [
+                    "Love and Affection",
+                    "Love and Friendship",
+                    "Love of Orphans",
+                    "Love and Adoption",
+                    "Gift",
+                    "Bonafide Gift",
+                    "Gift Transfer"
+                ],
+                "applicable_document_types": [
+                    "Donation Deed / Act of Donation (DOTN)",
+                    "Gift Deed (GFDE)",
+                    "Gift Warranty Deed (GFWD)",
+                    "Gift Grant Deed (GFGD)"
+                ]
+            },
+            "5_HB_Code": {
+                "code": "HB",
+                "rule": "If a sales price amount is available in the image along with phrases like 'High Bid', 'Bid', or 'Bid Amount', key the amount with code 'HB'"
+            },
+            "6_CS_Code": {
+                "code": "CS",
+                "rule": "If a sales price amount is available on a Cash Sale Deed or Cash Deed (CHDE), key the amount with code 'CS'"
+            },
+            "7_8_AV_Code": {
+                "code": "AV",
+                "rule": "If no sales price is in the body of the document but an amount is present in a Real Estate Validation Form / RTT Form / RT Form / RT-1, key that amount with code 'AV'",
+                "common_counties": "AL Montgomery, IL counties, SC counties"
+            },
+            "9_Body_vs_Form_Priority": {
+                "rule": "If sales price appears in both the body of the document and a Real Estate form, prioritize the body amount and use code 'RD'"
+            },
+            "10_CF_Code": {
+                "code": "CF",
+                "rule": "If a tax amount is present, key it per the KIs — the sales price is automatically grabbed with code 'CF' in most scenarios. Check the image: if an amount is mentioned, key with code 'RD'; otherwise the system keys 'CF'"
+            },
+            "11_NY_Transfer_Tax": {
+                "rule": "For NY counties, the tax amount is mostly keyed in the State Transfer Tax field. If County Transfer Tax is mentioned, key accordingly"
+            },
+            "12_NY_Recording_Stamp_Priority": {
+                "rule": "For NY counties, prioritize the sales price amount present in the recording stamp area over the body of the document"
+            },
+            "13_UN_Code_Multiple_Amounts": {
+                "code": "UN",
+                "rule": "If multiple sales price amounts are available, do not key a sales price amount — key code 'UN'"
+            },
+            "14_Greater_Less_Than_Exclusion": {
+                "rule": "Do not consider an amount mentioned as 'greater than' or 'less than' as the sales price amount"
+            },
+            "15_NO_Code_Unclear_Amount": {
+                "code": "NO",
+                "rule": "If the amount is mentioned as approximate, 'about', 'around', 'less than', a range (e.g., 1000 to 2000), or is unclear/unreadable, do not key the amount — key code 'NO'"
+            },
+            "16_UN_Code_Conflicting_Amounts": {
+                "code": "UN",
+                "rule": "If both a Purchase Price and a Consideration Amount are present and create confusion, do not key the amount — key code 'UN'"
+            },
+            "17_DL_Code": {
+                "code": "DL",
+                "applicable_document_types": [
+                    "Dation en Payment",
+                    "DELU",
+                    "Assumption Deed (AMDE)"
+                ],
+                "applicable_amount_phrases": [
+                    "Remaining Amount",
+                    "Balance Amount",
+                    "Unpaid Amount",
+                    "Delinquent Amount",
+                    "Indebtedness Amount",
+                    "Principal Amount"
+                ],
+                "rule": "Key the consideration or mentioned sales price amount with code 'DL'"
+            },
+            "18_NY_Index_vs_High_Bid": {
+                "rule": "For NY counties, if the document contains a sales price on the index page and a high bid amount, key the index page amount with code 'RD'"
+            },
+            "19_Amount_With_Gift": {
+                "rule": "If the document contains both a sales price amount and a gift reference, key the sales price amount with code 'RD'"
+            },
+            "20_FD_Code": {
+                "code": "FD",
+                "applicable_document_types": [
+                    "Fulfillment / Satisfaction / Released / Full Performance Deed",
+                    "Deed for Pursuant of Land Contract",
+                    "Conditional Sales Contract",
+                    "Agreement of Sale",
+                    "Land Contract",
+                    "Purchase Agreement",
+                    "Contract for Sale (CTSL)",
+                    "Bond for Deed"
+                ],
+                "rule": "Key as FLDE work with sales price code 'FD'"
+            },
+            "21_MN_Deed_Tax": {
+                "rule": "For MN counties, if the deed tax is $1.65 or less, do not key the sales price — use code 'NO'"
+            },
+            "22_Consideration_Under_3000": {
+                "rule": "If consideration is less than $3000, do not key the sales price — use code 'NO'"
+            }
         }
     },
     "counties": [
