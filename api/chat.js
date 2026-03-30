@@ -2,17 +2,44 @@ const countiesData = require('../counties_KIs.json');
 // ✅ node-fetch fallback for Node < 18
 const fetch = globalThis.fetch || require('node-fetch');
 
+// ✅ Smart lookup: extract only the relevant county data to stay within token limits
+function getRelevantContext(message) {
+  if (!message) return { common_rules: countiesData.common_rules };
+
+  const msgLower = message.toLowerCase();
+
+  // Try to find a matching county by name in the message
+  const matchedCounty = (countiesData.counties || []).find(c => {
+    const countyName = c.county?.toLowerCase() || "";
+    // e.g. "Assumption_LA KI_v1.2" → check if message contains "assumption"
+    const parts = countyName.split(/[_\s]/);
+    return parts.some(part => part.length > 3 && msgLower.includes(part));
+  });
+
+  if (matchedCounty) {
+    return {
+      common_rules: countiesData.common_rules,
+      county: matchedCounty
+    };
+  }
+
+  // No specific county matched — return only common_rules to save tokens
+  return {
+    common_rules: countiesData.common_rules,
+    note: "No specific county matched. Apply common rules."
+  };
+}
 
 module.exports = async function handler(req, res) {
 
-console.log("=== API HIT ===");
-console.log("Method:", req.method);
+  console.log("=== API HIT ===");
+  console.log("Method:", req.method);
 
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  // ✅ FIX 1: Read 'message' (not 'prompt') to match what frontend sends
+  // ✅ Read 'message' to match what frontend sends
   const { message, system, imageBase64, fileMime, history = [] } = req.body;
   console.log("Incoming message:", message);
   console.log("Has image:", !!imageBase64);
@@ -29,11 +56,10 @@ console.log("Method:", req.method);
   }
 
   try {
-    // ✅ FIX 2: Build user content — support both text and image (multimodal)
+    // ✅ Build user content — support both text and image (multimodal)
     let userContent;
 
     if (imageBase64) {
-      // Send image directly to vision model
       userContent = [
         {
           type: "image_url",
@@ -50,28 +76,29 @@ console.log("Method:", req.method);
       userContent = message;
     }
 
-    // ✅ FIX 3: Build messages array with conversation history
+    // ✅ Only inject relevant county rules — avoids blowing the TPM limit
+    const relevantContext = getRelevantContext(message);
+    console.log("County context matched:", relevantContext?.county?.county || "common rules only");
+
+    // ✅ Build messages array with conversation history
     const messages = [
-      { 
-        role: "system", 
-        // This combines your instructions with the actual JSON data
-        content: system + "\n\nDATABASE RULES:\n" + JSON.stringify(countiesData) 
+      {
+        role: "system",
+        content: system + "\n\nDATABASE RULES (relevant context only):\n" + JSON.stringify(relevantContext)
       },
       ...history,
-      { 
-        role: "user", 
-        content: imageBase64 ? userContent : message 
+      {
+        role: "user",
+        content: imageBase64 ? userContent : message
       }
     ];
 
-    // ✅ FIX 4: Use llama3-8b-8192 model via Groq
-    const model = "llama-3.1-8b-instant";
+    // ✅ Updated model — llama3-8b-8192 is decommissioned
+    const model = "llama-3.3-70b-versatile";
 
     console.log("Using model:", model);
     console.log("Message length:", typeof userContent === "string" ? userContent.length : "multimodal");
-    
     console.log("Sending request to Groq...");
-    console.log("Model:", model);
     console.log("Messages preview:", JSON.stringify(messages).slice(0, 300));
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -110,7 +137,7 @@ console.log("Method:", req.method);
     res.status(200).json({ reply: resultText });
 
   } catch (err) {
-  console.error("❌ FULL ERROR:", err);
-  res.status(500).json({ error: "AI connection failed: " + err.message });
+    console.error("❌ FULL ERROR:", err);
+    res.status(500).json({ error: "AI connection failed: " + err.message });
   }
 };
