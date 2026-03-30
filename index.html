@@ -571,9 +571,30 @@ STRICT INSTRUCTIONS:
 3. If the user asks for a field rule, provide the exact wording from the "details" section.
 4. Always check "additional_info" for state-specific rules (like Louisiana's "Square = Block" rule).
 
+5. AFTER giving the exact rule, ALSO provide a simple English explanation:
+   - Rewrite the rule in easy, clear language.
+   - Use short sentences.
+   - Avoid technical/legal terms where possible.
+   - Make it easy for data entry operators to understand quickly.
+
+6. Format the response clearly:
+   - First show: **Original Rule (Exact)**
+   - Then show: **Simple Explanation**
+   - Then show: **Note (if any additional info applies)**
+7. ALSO provide a "Quick Decision" line:
+   - Clearly tell what action to take
+   - Example: "Key Sales Price = 250000, Code = RD"
+   - Or: "Do NOT key Sales Price, Code = NO"
+
 EXAMPLE RESPONSE STYLE:
-"For [County Name], the [Field] rule is: [Details from JSON]. 
-Note: [Relevant Additional Info]"
+Original Rule:
+"For [County Name], the [Field] rule is: [Details from JSON]."
+
+Simple Explanation:
+"[Rewrite in easy English]"
+
+Note:
+"[Relevant Additional Info]"
 `;
 </script>
 </body>

@@ -1,4 +1,4 @@
-
+require('dotenv').config();
 const countiesData = require('../counties_KIs.json');
 // ✅ node-fetch fallback for Node < 18
 const fetch = globalThis.fetch || require('node-fetch');
