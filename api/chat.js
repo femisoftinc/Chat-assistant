@@ -65,7 +65,7 @@ console.log("Method:", req.method);
     ];
 
     // ✅ FIX 4: Use llama3-8b-8192 model via Groq
-    const model = "llama3-8b-8192";
+    const model = "llama-3.1-8b-instant";
 
     console.log("Using model:", model);
     console.log("Message length:", typeof userContent === "string" ? userContent.length : "multimodal");
