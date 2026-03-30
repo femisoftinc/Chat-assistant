@@ -175,15 +175,19 @@
                 "rule": "For NY counties, if the document contains a sales price on the index page and a high bid amount, key the index page amount with code 'RD'"
             },
             "19_Amount_With_Gift": {
-               "rule": "If both a sales price amount and gift-related wording are present, key the sales price with code 'RD' only if the amount is a valid transaction value.",
+               "rule": [
+                 "If both a sales price amount and gift-related wording are present, key the sales price with code 'RD' only if the amount is a valid transaction value",
+                        "If amount is less than or equal to 100 and gitt are present in the document keyed saleprice as blank with  Code GT",
+                        "If only gift related details are present in the document, keyed saleprice as blank and saleprice code GT"
+
+               ],
                 "conditions": [
-                  "Amount must be greater than 100",
+                  "Saleprice present in the document keyed if Amount must be greater than 100",
                   "Amount must represent a real consideration (not nominal)",
-                  "Gift wording is present along with valid amount"
+                  "eg: Total purchase amount: Gift showing in image will keyed as GT code with saleprice field blank"
                 ],
                 "exclusions": [
                   "If Validation Form states 'Gift' → Code GT",
-                  "If amount is less than or equal to 100 → Code GT",
                   "If amount is nominal or symbolic → Code GT"
                 ]
             },
