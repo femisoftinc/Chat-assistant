@@ -1,4 +1,4 @@
-const countiesData = require('../counties_KIs.json');
+const countiesData = require('../counties_rules.json');
 // ✅ node-fetch fallback for Node < 18
 const fetch = globalThis.fetch || require('node-fetch');
 
