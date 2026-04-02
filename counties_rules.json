@@ -279,7 +279,12 @@
       "H_Code_Homestead": {
         "description": "Homestead Property",
         "location": "Usually found in the legal/property address section",
-        "rule": "If a checkbox for 'This is homestead property' is ticked, key the H Code"
+        "rule": [
+          "Look for keywords like 'This is homestead property'",
+          "If such wording is present Key as H Code", 
+          "If it states 'This is NOT homestead property' Do NOT key",
+          "In some cases a checkbox for 'This is homestead property' is ticked, key the H Code"
+        ]
       },
       "O_Code_Owner_Occupied": {
         "description": "Owner Occupied",
