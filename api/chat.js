@@ -8,10 +8,52 @@ function getRelevantContext(message) {
 
   const msgLower = message.toLowerCase();
 
-  // Try to find a matching county by name in the message
+  // Detect general state-level queries (e.g., "APN format for LA counties", "all LA counties")
+  const isGeneralStateQuery =
+    msgLower.includes('counties') ||
+    msgLower.includes('all la') ||
+    msgLower.includes('format for la') ||
+    msgLower.includes('formats for la');
+
+  // Detect state abbreviation in message
+  const stateMatch = msgLower.match(/\b(la|in|il|mi|mo|ky|ks|mn|al|ny)\b/);
+
+  // Check if a specific county name is mentioned
+  const hasSpecificCounty = (countiesData.counties || []).some(c => {
+    const parts = (c.county?.toLowerCase() || '').split(/[_\s]/);
+    return parts.some(p => p.length > 4 && msgLower.includes(p));
+  });
+
+  // For general state queries with no specific county, return a summary of all counties in that state
+  if (isGeneralStateQuery && stateMatch && !hasSpecificCounty) {
+    const stateTag = stateMatch[1].toUpperCase();
+    const stateCounties = (countiesData.counties || []).filter(c =>
+      (c.county?.toUpperCase() || '').includes('_' + stateTag)
+    );
+
+    // Build a compact APN summary to avoid token overflow
+    const apnSummary = stateCounties.map(c => {
+      const apnField = (c.special_instructions || []).find(s =>
+        (s.field || '').toLowerCase().includes('assessor parcel') ||
+        (s.field || '').toLowerCase() === 'apn'
+      );
+      return {
+        county: c.county,
+        apn_format: apnField ? (apnField.details || []).slice(0, 4) : ['Not specified']
+      };
+    });
+
+    return {
+      common_rules: countiesData.common_rules,
+      query_type: 'general_state_summary',
+      state: stateTag,
+      county_apn_summary: apnSummary
+    };
+  }
+
+  // Try to find a specific county by name in the message
   const matchedCounty = (countiesData.counties || []).find(c => {
     const countyName = c.county?.toLowerCase() || "";
-    // e.g. "Assumption_LA KI_v1.2" → check if message contains "assumption"
     const parts = countyName.split(/[_\s]/);
     return parts.some(part => part.length > 3 && msgLower.includes(part));
   });
@@ -23,7 +65,7 @@ function getRelevantContext(message) {
     };
   }
 
-  // No specific county matched — return only common_rules to save tokens
+  // Fallback — return only common rules
   return {
     common_rules: countiesData.common_rules,
     note: "No specific county matched. Apply common rules."
