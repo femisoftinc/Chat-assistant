@@ -361,7 +361,167 @@
         "Tax Exempt Rider",
         "Mentions like 'Re-recorded due to scrivener's error'"
       ]
+    },
+    "Legal_Subdivision_Guide": {
+      "field_instruction":{
+        "field":"Legal_Subdivision",
+        "field_description": "The Subdivision Name of the platted and subdivided property is entered in the Legal Subdivision field. In absence of a Subdivision Name, this field may contain the Plat Name or Plat Number depending upon document/data presentation."
+      },
+      "rules": [
+
+    {
+      "rule_id": "R01",
+      "title": "Phase and Section go to their own fields",
+      "description": "The phase and section subdivision components are keyed into their respective legal component fields, not into the Subdivision Name field.",
+      "field_mapping": {
+        "Legal_Phase": "phase value",
+        "Legal_Section": "section value",
+        "Legal_Subdivision": "base subdivision name only"
+      }
+    },
+
+    {
+      "rule_id": "R02",
+      "title": "Unit after Subdivision Name stays in Subdivision Name field",
+      "description": "If a 'Unit' in the legal description follows the base Subdivision Name, then the Unit should be keyed into the Subdivision Name field.",
+      "exception": "Tract is not worked as a Unit. If Unit is on the end of a tract, key the whole name to the field. Example: 'Highland Estates tract no. 2 unit no. 3' — key entire string as-is.",
+      "examples": [
+        {
+          "scenario": "Unit follows base Subdivision Name",
+          "action": "Key Unit into Subdivision Name field"
+        }
+      ]
+    },
+
+    {
+      "rule_id": "R03",
+      "title": "Phase or Section embedded within Subdivision Name",
+      "description": "If the subdivision 'Phase' or 'Section' is embedded within the Subdivision Name, then key the entire string into the Subdivision Name field.",
+      "examples": [
+        {
+          "doc_reports": "Lot 4, Block C, of HIGHLAND ESTATES SECTION 2 UNIT 3",
+          "Legal_Subdivision": "HIGHLAND ESTATES SECTION 2 UNIT 3",
+          "Legal_Section": "(leave empty)",
+          "note": "Section 2 is embedded between Highland Estates and Unit 3 — key all into Subdivision Name"
+        }
+      ]
+    },
+
+    {
+      "rule_id": "R04",
+      "title": "Unit preceding Subdivision Name goes to LegalUnit field",
+      "description": "If a 'Unit' precedes the base Subdivision Name, then it should be keyed into the LegalUnit field, since in this case the Unit is not related to the subdivision.",
+      "field_mapping": {
+        "LegalUnit": "the Unit value",
+        "Legal_Subdivision": "base subdivision name only"
+      }
+    },
+
+    {
+      "rule_id": "R05",
+      "title": "City/town name after Lot or Lot+Block is the Subdivision",
+      "description": "When a Lot or Lot and Block are followed by a city/town name, then the city/town name should be considered the Subdivision.",
+      "caveat": "This does NOT apply to tracts.",
+      "field_mapping": {
+        "Legal_Subdivision": "city/town name that follows Lot or Lot+Block"
+      }
+    },
+
+    {
+      "rule_id": "R06",
+      "title": "Differing city names — 'in the City' or 'to the City' preceding subdivision",
+      "description": "If 'in the City' or 'to the City' name preceding a base legal subdivision differs from the legal city, then key 'in the City/to the City' with the subdivision and 2nd city name into the Legal_City field.",
+      "field_mapping": {
+        "Legal_City": "key 'in the City / to the City' + subdivision + 2nd city name"
+      }
+    },
+
+    {
+      "rule_id": "R07",
+      "title": "Subdivision followed only by 'In the City' or 'to the City'",
+      "description": "When the base legal subdivision name is followed ONLY by 'In the City', 'to the City', or identified as in/to a certain location, do NOT include that location as part of the subdivision. Key the entity into the Legal_City field.",
+      "field_mapping": {
+        "Legal_Subdivision": "base subdivision name only",
+        "Legal_City": "city/location that follows"
+      },
+      "note": "'Iowa' in these examples indicates the preceding entity is the legal city."
+    },
+
+    {
+      "rule_id": "R08",
+      "title": "Generic numbered additions — key entire string",
+      "description": "Generic identifiers such as 'First Addition' are not considered base legal subdivisions. When a generic numbered addition is encountered (e.g. 'FIRST ADDITION TO THE CITY OF HUDSON'), key it in its entirety into the Legal Subdivision field.",
+      "contrast": "Specific names like 'Speers Second Addition' ARE considered a base legal subdivision and follow normal rules.",
+      "examples": [
+        {
+          "doc_reports": "FIRST ADDITION TO THE CITY OF HUDSON",
+          "Legal_Subdivision": "FIRST ADDITION TO THE CITY OF HUDSON"
+        }
+      ]
     }
+  ],
+
+  "phrases_to_drop": {
+    "description": "These phrases should be removed/dropped and NOT keyed into the Subdivision field",
+    "phrases": [
+      "Map of",
+      "Plat of",
+      "Final Map of",
+      "Final Plat of"
+    ],
+    "examples": [
+      {
+        "doc_reports": "Map of Brookdale Estates, a subdivision",
+        "Legal_Subdivision": "Brookdale Estates"
+      }
+    ]
+  },
+
+  "phrases_to_retain": {
+    "description": "These phrases should be kept whenever encountered with a Subdivision name",
+    "phrases": [
+      "Revised",
+      "Recombination",
+      "Replat",
+      "Amended"
+    ],
+    "examples": [
+      {
+        "doc_reports": "Replat of Hillsdale Subdivision, an addition to the city of Fowler",
+        "Legal_Subdivision": "Replat of Hillsdale Subdivision",
+        "note": "The word 'subdivision' here is part of the name, not a descriptor — retain it"
+      }
+    ]
+  },
+
+  "do_not_key_as_subdivision": {
+    "description": "Do NOT key as Subdivision any plat references which cite the following. These should be ignored.",
+    "ignore_cases": [
+      {
+        "type": "surveyor_or_engineer_name",
+        "description": "Surveyor's or engineer's name who prepared the plat",
+        "example": "Ignore 'James T. Hill' in a plat reference"
+      },
+      {
+        "type": "plat_prepared_for",
+        "description": "Name of person or entity the plat was prepared for",
+        "example": "Ignore 'Deborah Holmes Lambe' in a plat reference"
+      },
+      {
+        "type": "property_owner",
+        "description": "Person or entity whose property it is",
+        "examples": [
+          "Ignore 'Property of James R. Diffenderfer'",
+          "Ignore 'Property of James C. Johnson'"
+        ]
+      },
+      {
+        "type": "generic_lands_reference",
+        "description": "Generic references such as 'minor subdivision on the lands of ___' unless an actual subdivision name is provided",
+        "exception": "If the legal reports something like 'The John Reed Farm Subdivision', it IS permissible to key into Legal Subdivision field"
+      }
+    ]
+  }   
   },
   "counties": [
     {
@@ -6445,4 +6605,5 @@
       ]
     }
   ]
+}
 }
